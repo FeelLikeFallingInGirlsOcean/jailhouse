@@ -1,0 +1,34 @@
+Extracting code coverage information from the hypervisor
+========================================================
+
+Jailhouse supports collecting code coverage information while it is running.
+In order to use that feature you have to set CONFIG_JAILHOUSE_GCOV in the
+configuration system. (see Documentation/hypervisor-configuration.txt)
+
+Now rebuild jailhouse and run your favorite example cell. Follow the usual
+workflow until `jailhouse disable`, but do not unload the jailhouse kernel
+module.
+
+While the module is loaded but the hypervisor is not running anymore, you can
+get a copy of the hypervisor-image containing runtime data. And that data
+includes code coverage information. The jailhouse tools allow you to extract
+gcov data from that image (*.gcda-files). And these files can be processed by
+a number of higher level tools.
+
+Example workflow
+----------------
+# enter jailhouse source directory
+cd /path/to/jailhouse
+# remove *.gcda files from previous run
+find -iname *.gcda -exec rm -f {} +
+# now run jailhouse until you eventually "disable" it again
+.....
+jailhouse disable
+# extract the *.gcda files, which will be placed in the src directory
+./tools/jailhouse-gcov-extract
+# at that point you can use higher level tools to process the data
+# here an example for generating an html-report with
+# lcov (http://ltp.sourceforge.net/coverage/lcov.php)
+lcov -o /tmp/coverage.info --capture -d .
+genhtml /tmp/coverage.info --output-directory /tmp/coverage/
+firefox /tmp/coverage/index.html
